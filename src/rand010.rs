@@ -82,3 +82,82 @@ where
     Rsdr: TryCryptoRng,
 {
 }
+
+#[cfg(test)]
+mod tests {
+    use rand_chacha09::{ChaCha12Core as Core, ChaCha12Rng as Rng};
+    use rand_core010::{Rng as _, SeedableRng, TryRng};
+    use rand09::{RngCore as _, SeedableRng as _};
+
+    struct Adapter(Rng);
+
+    impl SeedableRng for Adapter {
+        type Seed = <Rng as rand09::SeedableRng>::Seed;
+
+        fn from_seed(seed: Self::Seed) -> Self {
+            Self(Rng::from_seed(seed))
+        }
+    }
+
+    impl TryRng for Adapter {
+        type Error = std::convert::Infallible;
+
+        fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+            Ok(self.0.next_u32())
+        }
+
+        fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+            Ok(self.0.next_u64())
+        }
+
+        fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+            Ok(self.0.fill_bytes(dst))
+        }
+    }
+
+    type OurImpl = super::ReseedingRng<Adapter, Adapter>;
+    type TheirImpl = rand09::rngs::ReseedingRng<Core, Rng>;
+
+    #[test]
+    fn mirror_rand09_reseeding_rng() {
+        const N: usize = 1024 * 64 * 5 + 997;
+
+        let seed: <Adapter as SeedableRng>::Seed = rand09::random();
+
+        let mut o = OurImpl::try_new(1024 * 64, Adapter::from_seed(seed)).unwrap();
+        let mut t = TheirImpl::new(1024 * 64, Rng::from_seed(seed)).unwrap();
+
+        for _ in 0..(N / 4) {
+            assert_eq!(o.next_u32(), t.next_u32());
+        }
+
+        o.reseed().unwrap();
+        t.reseed().unwrap();
+
+        for _ in 0..(N / 8) {
+            assert_eq!(o.next_u64(), t.next_u64());
+        }
+
+        o.reseed().unwrap();
+        t.reseed().unwrap();
+
+        let mut buf_o = vec![0u8; 17 * 4];
+        let mut buf_t = vec![0u8; buf_o.len()];
+        for _ in 0..(N / buf_o.len()) {
+            o.fill_bytes(&mut buf_o[..]);
+            t.fill_bytes(&mut buf_t[..]);
+            assert_eq!(buf_o, buf_t);
+        }
+
+        o.reseed().unwrap();
+        t.reseed().unwrap();
+
+        buf_o.resize(1024 * 64 * 2 + 7 * 4, 0);
+        buf_t.resize(buf_o.len(), 0);
+        for _ in 0..(N / buf_o.len()) {
+            o.fill_bytes(&mut buf_o[..]);
+            t.fill_bytes(&mut buf_t[..]);
+            assert_eq!(buf_o, buf_t);
+        }
+    }
+}
