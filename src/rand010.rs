@@ -84,48 +84,26 @@ where
 }
 
 #[cfg(test)]
+mod test_adapter;
+
+#[cfg(test)]
 mod tests {
-    use rand_chacha09::{ChaCha12Core as Core, ChaCha12Rng as Rng};
-    use rand_core010::{Rng as _, SeedableRng, TryRng};
-    use rand09::{RngCore as _, SeedableRng as _};
-
-    struct Adapter(Rng);
-
-    impl SeedableRng for Adapter {
-        type Seed = <Rng as rand09::SeedableRng>::Seed;
-
-        fn from_seed(seed: Self::Seed) -> Self {
-            Self(Rng::from_seed(seed))
-        }
-    }
-
-    impl TryRng for Adapter {
-        type Error = std::convert::Infallible;
-
-        fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
-            Ok(self.0.next_u32())
-        }
-
-        fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
-            Ok(self.0.next_u64())
-        }
-
-        fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
-            Ok(self.0.fill_bytes(dst))
-        }
-    }
-
-    type OurImpl = super::ReseedingRng<Adapter, Adapter>;
-    type TheirImpl = rand09::rngs::ReseedingRng<Core, Rng>;
+    use super::{ReseedingRng, test_adapter::Adapter};
 
     #[test]
     fn mirror_rand09_reseeding_rng() {
+        use rand_chacha09::{ChaCha12Core, ChaCha12Rng};
+        use rand_core010::{Rng as _, SeedableRng as _};
+        use rand09::{RngCore as _, SeedableRng as _};
+
+        type OurImpl = ReseedingRng<Adapter, Adapter>;
+        type TheirImpl = rand09::rngs::ReseedingRng<ChaCha12Core, ChaCha12Rng>;
+
         const N: usize = 1024 * 64 * 5 + 997;
 
-        let seed: <Adapter as SeedableRng>::Seed = rand09::random();
-
+        let seed = rand09::random();
         let mut o = OurImpl::try_new(1024 * 64, Adapter::from_seed(seed)).unwrap();
-        let mut t = TheirImpl::new(1024 * 64, Rng::from_seed(seed)).unwrap();
+        let mut t = TheirImpl::new(1024 * 64, ChaCha12Rng::from_seed(seed)).unwrap();
 
         for _ in 0..(N / 4) {
             assert_eq!(o.next_u32(), t.next_u32());
