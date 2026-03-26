@@ -2,9 +2,9 @@ use rand_chacha09::ChaCha12Rng;
 use rand09::{RngCore as _, SeedableRng as _};
 
 #[derive(Debug)]
-pub struct Adapter(ChaCha12Rng);
+pub struct Rand09Adapter(ChaCha12Rng);
 
-impl rand_core010::SeedableRng for Adapter {
+impl rand_core010::SeedableRng for Rand09Adapter {
     type Seed = <ChaCha12Rng as rand09::SeedableRng>::Seed;
 
     fn from_seed(seed: Self::Seed) -> Self {
@@ -12,7 +12,7 @@ impl rand_core010::SeedableRng for Adapter {
     }
 }
 
-impl rand_core010::TryRng for Adapter {
+impl rand_core010::TryRng for Rand09Adapter {
     type Error = std::convert::Infallible;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {

@@ -1,5 +1,13 @@
 use rand_core010::{SeedableRng, TryCryptoRng, TryRng};
 
+/// ```rust
+/// # use rand010 as rand;
+/// use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
+/// use reseeding_rng::rand010::ReseedingRng;
+///
+/// let mut rng = ReseedingRng::<StdRng, _>::try_new(1024 * 64, SysRng).unwrap();
+/// println!("{:?}", rng.random::<[char; 4]>());
+/// ```
 #[derive(Debug)]
 pub struct ReseedingRng<R, Rsdr> {
     inner: R,
@@ -84,25 +92,26 @@ where
 }
 
 #[cfg(test)]
-mod test_adapter;
+mod mock;
 
 #[cfg(test)]
 mod tests {
-    use super::{ReseedingRng, test_adapter::Adapter};
+    use super::{ReseedingRng, mock::Rand09Adapter};
+
+    use rand_core010::{Rng as _, SeedableRng as _};
 
     #[test]
     fn mirror_rand09_reseeding_rng() {
         use rand_chacha09::{ChaCha12Core, ChaCha12Rng};
-        use rand_core010::{Rng as _, SeedableRng as _};
         use rand09::{RngCore as _, SeedableRng as _};
 
-        type OurImpl = ReseedingRng<Adapter, Adapter>;
+        type OurImpl = ReseedingRng<Rand09Adapter, Rand09Adapter>;
         type TheirImpl = rand09::rngs::ReseedingRng<ChaCha12Core, ChaCha12Rng>;
 
         const N: usize = 1024 * 64 * 5 + 997;
 
         let seed = rand09::random();
-        let mut o = OurImpl::try_new(1024 * 64, Adapter::from_seed(seed)).unwrap();
+        let mut o = OurImpl::try_new(1024 * 64, Rand09Adapter::from_seed(seed)).unwrap();
         let mut t = TheirImpl::new(1024 * 64, ChaCha12Rng::from_seed(seed)).unwrap();
 
         for _ in 0..(N / 4) {

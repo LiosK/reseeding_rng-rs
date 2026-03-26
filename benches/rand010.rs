@@ -9,8 +9,8 @@ use rand_core010::{Rng as _, SeedableRng as _};
 
 use reseeding_rng::rand010::ReseedingRng;
 
-#[path = "../src/rand010/test_adapter.rs"]
-mod test_adapter;
+#[path = "../src/rand010/mock.rs"]
+mod mock;
 
 mod vs_rand09 {
     use super::*;
@@ -18,10 +18,10 @@ mod vs_rand09 {
     use rand_chacha09::{ChaCha12Core, ChaCha12Rng};
     use rand09::{RngCore as _, SeedableRng as _};
 
-    use test_adapter::Adapter;
+    use mock::Rand09Adapter;
 
-    fn our_reseeding() -> ReseedingRng<Adapter, Adapter> {
-        let reseeder = Adapter::from_seed(rand09::random());
+    fn our_reseeding() -> ReseedingRng<Rand09Adapter, Rand09Adapter> {
+        let reseeder = Rand09Adapter::from_seed(rand09::random());
         ReseedingRng::try_new(1024 * 64, reseeder).unwrap()
     }
 
