@@ -13,7 +13,7 @@ impl rand_core010::SeedableRng for Rand09Adapter {
 }
 
 impl rand_core010::TryRng for Rand09Adapter {
-    type Error = std::convert::Infallible;
+    type Error = rand_core010::Infallible;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
         Ok(self.0.next_u32())

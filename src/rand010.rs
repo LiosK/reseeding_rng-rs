@@ -1,4 +1,4 @@
-use rand_core010::{SeedableRng, TryCryptoRng, TryRng};
+use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
 
 /// ```rust
 /// # use rand010 as rand;
@@ -91,13 +91,29 @@ where
 {
 }
 
+/// This implementation reseeds the inner generator upon `clone()`.
+impl<R, Rsdr> Clone for ReseedingRng<R, Rsdr>
+where
+    R: SeedableRng,
+    Rsdr: Clone + Rng,
+{
+    fn clone(&self) -> Self {
+        let mut reseeder = self.reseeder.clone();
+        Self {
+            inner: R::from_rng(&mut reseeder),
+            reseeder,
+            threshold: self.threshold,
+            bytes_consumed: 0,
+        }
+    }
+}
+
 #[cfg(test)]
 mod mock;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand_core010::Rng as _;
 
     #[test]
     fn mirror_rand09_reseeding_rng() {
