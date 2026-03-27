@@ -96,23 +96,24 @@ mod mock;
 
 #[cfg(test)]
 mod tests {
-    use super::{ReseedingRng, mock::Rand09Adapter};
-
-    use rand_core010::{Rng as _, SeedableRng as _};
+    use super::*;
+    use rand_core010::Rng as _;
 
     #[test]
     fn mirror_rand09_reseeding_rng() {
         use rand_chacha09::{ChaCha12Core, ChaCha12Rng};
         use rand09::{RngCore as _, SeedableRng as _};
 
-        type OurImpl = ReseedingRng<Rand09Adapter, Rand09Adapter>;
+        use mock::Rand09Adapter as Adapter;
+
+        type OurImpl = ReseedingRng<Adapter, Adapter>;
         type TheirImpl = rand09::rngs::ReseedingRng<ChaCha12Core, ChaCha12Rng>;
 
-        const N: usize = 1024 * 64 * 5 + 997;
+        const N: usize = 1024 * 16 * 5 + 997;
 
         let seed = rand09::random();
-        let mut o = OurImpl::try_new(1024 * 64, Rand09Adapter::from_seed(seed)).unwrap();
-        let mut t = TheirImpl::new(1024 * 64, ChaCha12Rng::from_seed(seed)).unwrap();
+        let mut o = OurImpl::try_new(1024 * 16, Adapter::from_seed(seed)).unwrap();
+        let mut t = TheirImpl::new(1024 * 16, ChaCha12Rng::from_seed(seed)).unwrap();
 
         for _ in 0..(N / 4) {
             assert_eq!(o.next_u32(), t.next_u32());
@@ -139,12 +140,90 @@ mod tests {
         o.reseed().unwrap();
         t.reseed().unwrap();
 
-        buf_o.resize(1024 * 64 * 2 + 7 * 4, 0);
+        buf_o.resize(1024 * 16 * 2 + 7 * 4, 0);
         buf_t.resize(buf_o.len(), 0);
         for _ in 0..(N / buf_o.len()) {
             o.fill_bytes(&mut buf_o[..]);
             t.fill_bytes(&mut buf_t[..]);
             assert_eq!(buf_o, buf_t);
+        }
+    }
+
+    /// Tests in this module may occasionally fail.
+    mod fallible {
+        use super::*;
+        use rand010::rngs::{StdRng, SysRng};
+
+        const N: usize = 20 * 256;
+
+        #[test]
+        fn generate_random_numbers() {
+            let mut rng = ReseedingRng::<StdRng, _>::try_new(1024, SysRng).unwrap();
+
+            let arrays = (0..N)
+                .map(|_| rng.next_u32().to_le_bytes())
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+
+            let arrays = (0..N)
+                .map(|_| rng.next_u64().to_le_bytes())
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+
+            let mut buf = [0u8; 17];
+            let arrays = (0..N)
+                .map(|_| {
+                    rng.fill_bytes(buf.as_mut());
+                    buf
+                })
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+        }
+
+        #[test]
+        fn handle_corner_cases() {
+            let mut rng = ReseedingRng::<StdRng, _>::try_new(1, SysRng).unwrap();
+
+            let arrays = (0..N)
+                .map(|_| rng.next_u32().to_le_bytes())
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+
+            let arrays = (0..N)
+                .map(|_| rng.next_u64().to_le_bytes())
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+
+            let mut buf = [0u8; 5];
+            let arrays = (0..N)
+                .map(|_| {
+                    rng.fill_bytes(buf.as_mut());
+                    buf
+                })
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+
+            let mut buf = [0u8; 0];
+            for _ in 0..N {
+                rng.fill_bytes(buf.as_mut());
+            }
+        }
+
+        fn check_each_byte_for_randomness<const N: usize>(arrays: &[[u8; N]]) -> bool {
+            (0..N).all(|i| {
+                let mut freq = [0usize; 256];
+                for array in arrays {
+                    freq[array[i] as usize] += 1; // by column
+                }
+
+                let expected = arrays.len() as f64 / 256.0;
+                let chi_squared = freq.iter().fold(0.0, |acc, &observed| {
+                    let dev = observed as f64 - expected;
+                    acc + dev * dev / expected
+                });
+
+                chi_squared < 330.52 // df = 255, p = 0.001
+            })
         }
     }
 }
