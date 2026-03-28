@@ -1,5 +1,20 @@
+//! `ReseedingRng` implementation for the `rand` crate v0.10.
+
 use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
 
+/// A wrapper that reseeds the underlying pseudorandom number generator periodically.
+///
+/// This type reseeds the underlying generator every time a specified number of random bytes have
+/// been produced. If the periodic reseeding attempt fails, `ReseedingRng` silently skips it and
+/// retries after the next threshold is reached.
+///
+/// Unlike [`rand` v0.9's equivalent](https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html),
+/// this variant is built on top of [`TryRng`] instead of [`BlockRng`], allowing a wider choice of
+/// underlying generators, including [`StdRng`].
+///
+/// [`BlockRng`]: rand_core010::block::BlockRng
+/// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
+///
 /// ```rust
 /// # use rand010 as rand;
 /// use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
@@ -21,6 +36,16 @@ where
     R: SeedableRng,
     Rsdr: TryRng,
 {
+    /// Creates a new instance with a reseeding threshold in bytes and a seed generator for
+    /// initialization and reseeding.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `threshold` is zero.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err` if `reseeder` fails to seed the underlying generator.
     pub fn try_new(threshold: usize, mut reseeder: Rsdr) -> Result<Self, Rsdr::Error> {
         assert!(threshold > 0, "`threshold` must be greater than zero");
         R::try_from_rng(&mut reseeder).map(|inner| Self {
@@ -31,6 +56,11 @@ where
         })
     }
 
+    /// Reseeds the underlying generator immediately.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Err` if `reseeder` fails to seed the underlying generator.
     pub fn reseed(&mut self) -> Result<(), Rsdr::Error> {
         R::try_from_rng(&mut self.reseeder).map(|inner| {
             self.inner = inner;
@@ -91,7 +121,7 @@ where
 {
 }
 
-/// This implementation reseeds the inner generator upon `clone()`.
+/// This implementation reseeds the underlying generator upon `clone()`.
 impl<R, Rsdr> Clone for ReseedingRng<R, Rsdr>
 where
     R: SeedableRng,
