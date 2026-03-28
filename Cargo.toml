@@ -24,3 +24,6 @@ rand_chacha09 = { package = "rand_chacha", version = "=0.9.0" }
 # RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features --no-deps --open
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[profile.bench]
+lto = true

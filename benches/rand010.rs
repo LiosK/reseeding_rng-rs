@@ -3,14 +3,63 @@
 
 extern crate test;
 
-use test::{Bencher, black_box};
-
 use rand_core010::{Rng as _, SeedableRng as _};
 
 use reseeding_rng::rand010::ReseedingRng;
 
 #[path = "../src/rand010/mock.rs"]
 mod mock;
+
+macro_rules! generate_benches {
+    ($rng:ident, $bench_next_u32:ident, $bench_next_u64:ident, $bench_fill_bytes:ident) => {
+        #[bench]
+        fn $bench_next_u32(b: &mut test::Bencher) {
+            let mut rng = $rng();
+            b.iter(|| test::black_box(rng.next_u32()));
+        }
+
+        #[bench]
+        fn $bench_next_u64(b: &mut test::Bencher) {
+            let mut rng = $rng();
+            b.iter(|| test::black_box(rng.next_u64()));
+        }
+
+        #[bench]
+        fn $bench_fill_bytes(b: &mut test::Bencher) {
+            let mut rng = $rng();
+            let mut buf = vec![0u8; 97 * 4];
+            b.iter(|| rng.fill_bytes(buf.as_mut()));
+        }
+    };
+}
+
+mod overhead {
+    use super::*;
+
+    use rand010::rngs::{StdRng, SysRng};
+
+    fn reseeding() -> ReseedingRng<StdRng, SysRng> {
+        ReseedingRng::try_new(1024 * 64, SysRng).unwrap()
+    }
+
+    fn bare_rng() -> StdRng {
+        StdRng::try_from_rng(&mut SysRng).unwrap()
+    }
+
+    generate_benches!(
+        reseeding,
+        bench_next_u32_reseeding,
+        bench_next_u64_reseeding,
+        bench_fill_bytes_reseeding
+    );
+
+    generate_benches!(
+        bare_rng,
+        bench_next_u32_bare_rng,
+        bench_next_u64_bare_rng,
+        bench_fill_bytes_bare_rng
+    );
+}
 
 mod vs_rand09 {
     use super::*;
@@ -30,93 +79,17 @@ mod vs_rand09 {
         rand09::rngs::ReseedingRng::new(1024 * 64, reseeder).unwrap()
     }
 
-    #[bench]
-    fn bench_next_u32_our_reseeding(b: &mut Bencher) {
-        let mut g = our_reseeding();
-        b.iter(|| black_box(g.next_u32()));
-    }
+    generate_benches!(
+        our_reseeding,
+        bench_next_u32_our_reseeding,
+        bench_next_u64_our_reseeding,
+        bench_fill_bytes_our_reseeding
+    );
 
-    #[bench]
-    fn bench_next_u32_rand09_reseeding(b: &mut Bencher) {
-        let mut g = rand09_reseeding();
-        b.iter(|| black_box(g.next_u32()));
-    }
-
-    #[bench]
-    fn bench_next_u64_our_reseeding(b: &mut Bencher) {
-        let mut g = our_reseeding();
-        b.iter(|| black_box(g.next_u64()));
-    }
-
-    #[bench]
-    fn bench_next_u64_rand09_reseeding(b: &mut Bencher) {
-        let mut g = rand09_reseeding();
-        b.iter(|| black_box(g.next_u64()));
-    }
-
-    #[bench]
-    fn bench_fill_bytes_our_reseeding(b: &mut Bencher) {
-        let mut g = our_reseeding();
-        let mut buf = vec![0u8; 97 * 4];
-        b.iter(|| g.fill_bytes(&mut buf[..]));
-    }
-
-    #[bench]
-    fn bench_fill_bytes_rand09_reseeding(b: &mut Bencher) {
-        let mut g = rand09_reseeding();
-        let mut buf = vec![0u8; 97 * 4];
-        b.iter(|| g.fill_bytes(&mut buf[..]));
-    }
-}
-
-mod overhead {
-    use super::*;
-
-    use rand010::{rngs::StdRng, rngs::SysRng};
-
-    fn reseeding() -> ReseedingRng<StdRng, SysRng> {
-        ReseedingRng::try_new(1024 * 64, SysRng).unwrap()
-    }
-
-    fn bare_rng() -> StdRng {
-        StdRng::try_from_rng(&mut SysRng).unwrap()
-    }
-
-    #[bench]
-    fn bench_next_u32_reseeding(b: &mut Bencher) {
-        let mut g = reseeding();
-        b.iter(|| black_box(g.next_u32()));
-    }
-
-    #[bench]
-    fn bench_next_u32_bare_rng(b: &mut Bencher) {
-        let mut g = bare_rng();
-        b.iter(|| black_box(g.next_u32()));
-    }
-
-    #[bench]
-    fn bench_next_u64_reseeding(b: &mut Bencher) {
-        let mut g = reseeding();
-        b.iter(|| black_box(g.next_u64()));
-    }
-
-    #[bench]
-    fn bench_next_u64_bare_rng(b: &mut Bencher) {
-        let mut g = bare_rng();
-        b.iter(|| black_box(g.next_u64()));
-    }
-
-    #[bench]
-    fn bench_fill_bytes_reseeding(b: &mut Bencher) {
-        let mut g = reseeding();
-        let mut buf = vec![0u8; 97 * 4];
-        b.iter(|| g.fill_bytes(&mut buf[..]));
-    }
-
-    #[bench]
-    fn bench_fill_bytes_bare_rng(b: &mut Bencher) {
-        let mut g = bare_rng();
-        let mut buf = vec![0u8; 97 * 4];
-        b.iter(|| g.fill_bytes(&mut buf[..]));
-    }
+    generate_benches!(
+        rand09_reseeding,
+        bench_next_u32_rand09_reseeding,
+        bench_next_u64_rand09_reseeding,
+        bench_fill_bytes_rand09_reseeding
+    );
 }
