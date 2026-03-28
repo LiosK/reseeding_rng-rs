@@ -13,7 +13,6 @@
 //! # Examples
 //!
 //! ```rust
-//! # use rand010 as rand;
 //! use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
 //! use reseeding_rng::ReseedingRng;
 //!
@@ -24,7 +23,7 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
+use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 
 /// A wrapper that periodically reseeds the underlying pseudorandom number generator.
 ///
@@ -36,7 +35,7 @@ use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
 /// this variant is built on top of [`TryRng`] instead of the block [`Generator`], allowing a wider
 /// choice of underlying generators, including [`StdRng`].
 ///
-/// [`Generator`]: rand_core010::block::Generator
+/// [`Generator`]: rand_core::block::Generator
 /// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
 #[derive(Debug)]
 pub struct ReseedingRng<R, Rsdr> {
@@ -214,7 +213,7 @@ mod tests {
     /// Tests in this module may occasionally fail.
     mod fallible {
         use super::*;
-        use rand010::rngs::{StdRng, SysRng};
+        use rand::rngs::{StdRng, SysRng};
 
         const N: usize = 20 * 256;
 

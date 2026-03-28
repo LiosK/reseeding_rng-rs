@@ -2,7 +2,7 @@
 
 extern crate test;
 
-use rand_core010::{Rng as _, SeedableRng as _};
+use rand_core::{Rng as _, SeedableRng as _};
 
 use reseeding_rng::ReseedingRng;
 
@@ -35,7 +35,7 @@ macro_rules! generate_benches {
 mod overhead {
     use super::*;
 
-    use rand010::rngs::{StdRng, SysRng};
+    use rand::rngs::{StdRng, SysRng};
 
     fn reseeding() -> ReseedingRng<StdRng, SysRng> {
         ReseedingRng::try_new(1024 * 64, SysRng).unwrap()
@@ -73,7 +73,7 @@ mod vs_rand09 {
         ReseedingRng::try_new(1024 * 64, reseeder).unwrap()
     }
 
-    fn rand09_reseeding() -> rand09::rngs::ReseedingRng<ChaCha12Core, ChaCha12Rng> {
+    fn rand_reseeding() -> rand09::rngs::ReseedingRng<ChaCha12Core, ChaCha12Rng> {
         let reseeder = ChaCha12Rng::from_seed(rand09::random());
         rand09::rngs::ReseedingRng::new(1024 * 64, reseeder).unwrap()
     }
@@ -86,10 +86,10 @@ mod vs_rand09 {
     );
 
     generate_benches!(
-        rand09_reseeding,
-        bench_next_u32_rand09_reseeding,
-        bench_next_u64_rand09_reseeding,
-        bench_fill_bytes_rand09_reseeding
+        rand_reseeding,
+        bench_next_u32_rand_reseeding,
+        bench_next_u64_rand_reseeding,
+        bench_fill_bytes_rand_reseeding
     );
 }
 
@@ -98,7 +98,7 @@ mod vs_rand010 {
 
     use std::{cell::UnsafeCell, rc::Rc};
 
-    use rand010::rngs::{StdRng, SysRng, ThreadRng};
+    use rand::rngs::{StdRng, SysRng, ThreadRng};
 
     struct OurThreadRng(Rc<UnsafeCell<ReseedingRng<StdRng, SysRng>>>);
 
@@ -108,8 +108,8 @@ mod vs_rand010 {
         ));
     }
 
-    impl rand_core010::TryRng for OurThreadRng {
-        type Error = rand_core010::Infallible;
+    impl rand_core::TryRng for OurThreadRng {
+        type Error = rand_core::Infallible;
 
         fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
             unsafe { &mut *self.0.get() }.try_next_u32()
@@ -128,7 +128,7 @@ mod vs_rand010 {
         OurThreadRng(THREAD_RNG.with(Rc::clone))
     }
 
-    fn rand010_thread_rng() -> ThreadRng {
+    fn rand_thread_rng() -> ThreadRng {
         ThreadRng::default()
     }
 
@@ -140,9 +140,9 @@ mod vs_rand010 {
     );
 
     generate_benches!(
-        rand010_thread_rng,
-        bench_next_u32_rand010_thread_rng,
-        bench_next_u64_rand010_thread_rng,
-        bench_fill_bytes_rand010_thread_rng
+        rand_thread_rng,
+        bench_next_u32_rand_thread_rng,
+        bench_next_u64_rand_thread_rng,
+        bench_fill_bytes_rand_thread_rng
     );
 }
