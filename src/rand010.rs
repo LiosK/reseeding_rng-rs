@@ -1,4 +1,4 @@
-//! `ReseedingRng` implementation for the `rand` crate v0.10.
+//! `ReseedingRng` for use with the `rand` crate v0.10.
 
 use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
 
@@ -9,10 +9,10 @@ use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
 /// retries after the next threshold is reached.
 ///
 /// Unlike [`rand` v0.9's equivalent](https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html),
-/// this variant is built on top of [`TryRng`] instead of [`BlockRng`], allowing a wider choice of
-/// underlying generators, including [`StdRng`].
+/// this variant is built on top of [`TryRng`] instead of the block [`Generator`], allowing a wider
+/// choice of underlying generators, including [`StdRng`].
 ///
-/// [`BlockRng`]: rand_core010::block::BlockRng
+/// [`Generator`]: rand_core010::block::Generator
 /// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
 ///
 /// # Examples
