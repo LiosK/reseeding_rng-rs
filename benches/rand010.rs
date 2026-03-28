@@ -93,3 +93,57 @@ mod vs_rand09 {
         bench_fill_bytes_rand09_reseeding
     );
 }
+
+mod vs_rand010 {
+    use super::*;
+
+    use std::{cell::UnsafeCell, rc::Rc};
+
+    use rand010::rngs::{StdRng, SysRng, ThreadRng};
+
+    struct OurThreadRng(Rc<UnsafeCell<ReseedingRng<StdRng, SysRng>>>);
+
+    thread_local! {
+        static THREAD_RNG: Rc<UnsafeCell<ReseedingRng<StdRng, SysRng>>> = Rc::new(UnsafeCell::new(
+            ReseedingRng::try_new(1024 * 64, SysRng).unwrap(),
+        ));
+    }
+
+    impl rand_core010::TryRng for OurThreadRng {
+        type Error = rand_core010::Infallible;
+
+        fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+            unsafe { &mut *self.0.get() }.try_next_u32()
+        }
+
+        fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+            unsafe { &mut *self.0.get() }.try_next_u64()
+        }
+
+        fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error> {
+            unsafe { &mut *self.0.get() }.try_fill_bytes(dest)
+        }
+    }
+
+    fn our_thread_rng() -> OurThreadRng {
+        OurThreadRng(THREAD_RNG.with(Rc::clone))
+    }
+
+    fn rand010_thread_rng() -> ThreadRng {
+        ThreadRng::default()
+    }
+
+    generate_benches!(
+        our_thread_rng,
+        bench_next_u32_our_thread_rng,
+        bench_next_u64_our_thread_rng,
+        bench_fill_bytes_our_thread_rng
+    );
+
+    generate_benches!(
+        rand010_thread_rng,
+        bench_next_u32_rand010_thread_rng,
+        bench_next_u64_rand010_thread_rng,
+        bench_fill_bytes_rand010_thread_rng
+    );
+}
