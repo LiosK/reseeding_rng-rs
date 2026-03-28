@@ -102,16 +102,17 @@ where
 
     fn try_fill_bytes(&mut self, mut dst: &mut [u8]) -> Result<(), Self::Error> {
         loop {
-            if self.bytes_consumed >= self.threshold {
-                self.reseed_and_reset(0);
+            if self.bytes_consumed + dst.len() <= self.threshold {
+                self.bytes_consumed += dst.len();
+                break self.inner.try_fill_bytes(dst);
             }
-            let len = dst.len().min(self.threshold - self.bytes_consumed);
-            self.bytes_consumed += len;
-            self.inner.try_fill_bytes(&mut dst[..len])?;
-            dst = &mut dst[len..];
-            if dst.is_empty() {
-                break Ok(());
+            if self.bytes_consumed < self.threshold {
+                let mid = self.threshold - self.bytes_consumed;
+                self.bytes_consumed += mid;
+                self.inner.try_fill_bytes(&mut dst[..mid])?;
+                dst = &mut dst[mid..];
             }
+            self.reseed_and_reset(0);
         }
     }
 }
