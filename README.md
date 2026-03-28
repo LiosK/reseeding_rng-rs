@@ -1,5 +1,8 @@
 # Crate `reseeding_rng`
 
+[![Crates.io](https://img.shields.io/crates/v/reseeding_rng)](https://crates.io/crates/reseeding_rng)
+[![License](https://img.shields.io/crates/l/reseeding_rng)](https://github.com/LiosK/reseeding_rng-rs/blob/main/LICENSE)
+
 `ReseedingRng` that periodically reseeds the underlying pseudorandom number
 generator.
 

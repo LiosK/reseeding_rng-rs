@@ -13,12 +13,15 @@
 //! # Examples
 //!
 //! ```rust
+//! # #[cfg(feature = "rand010")]
+//! # {
 //! # use rand010 as rand;
 //! use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
 //! use reseeding_rng::rand010::ReseedingRng;
 //!
 //! let mut rng = ReseedingRng::<StdRng, _>::try_new(1024 * 64, SysRng).unwrap();
 //! println!("{:?}", rng.random::<[char; 4]>());
+//! # }
 //! ```
 
 #![cfg_attr(not(test), no_std)]
