@@ -2,7 +2,7 @@
 
 use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
 
-/// A wrapper that reseeds the underlying pseudorandom number generator periodically.
+/// A wrapper that periodically reseeds the underlying pseudorandom number generator.
 ///
 /// This type reseeds the underlying generator every time a specified number of random bytes have
 /// been produced. If the periodic reseeding attempt fails, `ReseedingRng` silently skips it and
@@ -14,6 +14,8 @@ use rand_core010::{Rng, SeedableRng, TryCryptoRng, TryRng};
 ///
 /// [`BlockRng`]: rand_core010::block::BlockRng
 /// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
+///
+/// # Examples
 ///
 /// ```rust
 /// # use rand010 as rand;

@@ -5,7 +5,7 @@ authors = ["LiosK <contact@mail.liosk.net>"]
 license = "Apache-2.0"
 edition = "2024"
 rust-version = "1.85"
-description = "ReseedingRng on rand v0.10"
+description = "ReseedingRng that periodically reseeds the underlying PRNG"
 repository = "https://github.com/LiosK/reseeding_rng-rs"
 
 [features]
