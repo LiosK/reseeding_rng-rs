@@ -9,12 +9,8 @@ description = "ReseedingRng that periodically reseeds the underlying PRNG"
 repository = "https://github.com/LiosK/reseeding_rng-rs"
 documentation = "https://docs.rs/reseeding_rng"
 
-[features]
-default = ["rand010"]
-rand010 = ["dep:rand_core010"]
-
 [dependencies]
-rand_core010 = { package = "rand_core", version = "0.10", default-features = false, optional = true }
+rand_core010 = { package = "rand_core", version = "0.10", default-features = false }
 
 [dev-dependencies]
 rand010 = { package = "rand", version = "0.10" }

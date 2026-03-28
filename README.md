@@ -19,7 +19,7 @@ See [the `rand` v0.9 documentation] for further discussion.
 
 ```rust
 use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
-use reseeding_rng::rand010::ReseedingRng;
+use reseeding_rng::ReseedingRng;
 
 let mut rng = ReseedingRng::<StdRng, _>::try_new(1024 * 64, SysRng).unwrap();
 println!("{:?}", rng.random::<[char; 4]>());

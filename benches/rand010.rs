@@ -1,13 +1,12 @@
-#![cfg(feature = "rand010")]
 #![feature(test)]
 
 extern crate test;
 
 use rand_core010::{Rng as _, SeedableRng as _};
 
-use reseeding_rng::rand010::ReseedingRng;
+use reseeding_rng::ReseedingRng;
 
-#[path = "../src/rand010/mock.rs"]
+#[path = "../src/mock.rs"]
 mod mock;
 
 macro_rules! generate_benches {
