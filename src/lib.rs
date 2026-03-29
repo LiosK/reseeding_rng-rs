@@ -77,7 +77,7 @@ where
     /// # Errors
     ///
     /// Returns `Err` if `reseeder` fails to seed the underlying generator.
-    pub fn reseed(&mut self) -> Result<(), Rsdr::Error> {
+    pub fn try_reseed(&mut self) -> Result<(), Rsdr::Error> {
         R::try_from_rng(&mut self.reseeder).map(|inner| {
             self.inner = inner;
             self.bytes_consumed = 0;
@@ -86,7 +86,7 @@ where
 
     #[cold]
     fn reset_after_reseed_attempt_at(&mut self, pos: usize) {
-        let _ = self.reseed();
+        let _ = self.try_reseed();
         self.bytes_consumed = pos;
     }
 }
@@ -182,14 +182,14 @@ mod tests {
             assert_eq!(o.next_u32(), t.next_u32());
         }
 
-        o.reseed().unwrap();
+        o.try_reseed().unwrap();
         t.reseed().unwrap();
 
         for _ in 0..(N / 8) {
             assert_eq!(o.next_u64(), t.next_u64());
         }
 
-        o.reseed().unwrap();
+        o.try_reseed().unwrap();
         t.reseed().unwrap();
 
         let mut buf_o = vec![0u8; 17 * 4];
@@ -200,7 +200,7 @@ mod tests {
             assert_eq!(buf_o, buf_t);
         }
 
-        o.reseed().unwrap();
+        o.try_reseed().unwrap();
         t.reseed().unwrap();
 
         buf_o.resize(1024 * 16 * 2 + 7 * 4, 0);
