@@ -13,6 +13,8 @@ includes the `ReseedingRng` from v0.9 and earlier.
 Note that periodic reseeding is never strictly _necessary_.
 See [the `rand` v0.9 documentation] for further discussion.
 
+This crate is `no_std`-compatible.
+
 [the `rand` v0.9 documentation]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
 
 ## Examples
