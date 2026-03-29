@@ -212,6 +212,24 @@ mod tests {
         }
     }
 
+    #[test]
+    fn reseed_after_threshold() {
+        use rand::rngs::StdRng;
+        let seed = rand::random();
+        let mut g1 = StdRng::from_rng(&mut StdRng::from_seed(seed));
+        let mut g2 =
+            ReseedingRng::<StdRng, _>::try_new(1024 * 64, StdRng::from_seed(seed)).unwrap();
+
+        for _ in 0..(64 * 1024 / (32 / 8 + 32 / 8 + 64 / 8)) {
+            assert_eq!(g1.next_u32(), g2.next_u32());
+            assert_eq!(g1.next_u32(), g2.next_u32());
+            assert_eq!(g1.next_u64(), g2.next_u64());
+        }
+
+        assert_ne!(g1.next_u32(), g2.next_u32());
+        assert_ne!(g1.next_u64(), g2.next_u64());
+    }
+
     /// Tests in this module may occasionally fail.
     mod fallible {
         use super::*;
