@@ -85,7 +85,7 @@ where
     }
 
     #[cold]
-    fn reseed_and_reset(&mut self, pos: usize) {
+    fn reset_after_reseed_attempt_at(&mut self, pos: usize) {
         let _ = self.reseed();
         self.bytes_consumed = pos;
     }
@@ -101,7 +101,7 @@ where
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
         self.bytes_consumed += 32 / 8;
         if self.bytes_consumed > self.threshold {
-            self.reseed_and_reset(32 / 8);
+            self.reset_after_reseed_attempt_at(32 / 8);
         }
         self.inner.try_next_u32()
     }
@@ -109,7 +109,7 @@ where
     fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
         self.bytes_consumed += 64 / 8;
         if self.bytes_consumed > self.threshold {
-            self.reseed_and_reset(64 / 8);
+            self.reset_after_reseed_attempt_at(64 / 8);
         }
         self.inner.try_next_u64()
     }
@@ -126,7 +126,7 @@ where
                 self.inner.try_fill_bytes(&mut dst[..mid])?;
                 dst = &mut dst[mid..];
             }
-            self.reseed_and_reset(0);
+            self.reset_after_reseed_attempt_at(0);
         }
     }
 }
