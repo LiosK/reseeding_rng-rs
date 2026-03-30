@@ -19,13 +19,23 @@ This crate is `no_std`-compatible.
 
 ## Examples
 
+`ReseedingRng` is useful to replicate the reseeding behavior of [`ThreadRng`].
+As of `rand` v0.10.0, `ThreadRng` uses the same algorithm as [`StdRng`] and
+reseeds it via [`SysRng`] every 64KiB of output. You can emulate this behavior
+by configuring `ReseedingRng` as follows:
+
 ```rust
 use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
 use reseeding_rng::ReseedingRng;
 
-let mut rng = ReseedingRng::<StdRng, _>::try_new(1024 * 64, SysRng).unwrap();
+let mut rng = ReseedingRng::<StdRng, _>::try_new(1024 * 64, SysRng)
+    .expect("couldn't initialize ReseedingRng due to SysRng failure");
 println!("{:?}", rng.random::<[char; 4]>());
 ```
+
+[`SysRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.SysRng.html
+[`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
+[`ThreadRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.ThreadRng.html
 
 ## License
 
