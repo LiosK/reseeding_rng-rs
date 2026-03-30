@@ -161,6 +161,7 @@ mod mock;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::rngs::{StdRng, SysRng};
 
     #[test]
     fn mirror_rand09_reseeding_rng() {
@@ -214,7 +215,6 @@ mod tests {
 
     #[test]
     fn reseed_after_threshold() {
-        use rand::rngs::StdRng;
         let seed = rand::random();
         let mut g1 = StdRng::from_rng(&mut StdRng::from_seed(seed));
         let mut g2 =
@@ -230,10 +230,81 @@ mod tests {
         assert_ne!(g1.next_u64(), g2.next_u64());
     }
 
+    #[test]
+    fn count_periodic_reseeds() {
+        use std::cell::Cell;
+
+        struct MockReseeder<'a> {
+            counter: &'a Cell<usize>,
+        }
+
+        impl TryRng for MockReseeder<'_> {
+            type Error = <SysRng as TryRng>::Error;
+
+            fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+                self.counter.set(self.counter.get() + 1);
+                SysRng.try_next_u32()
+            }
+
+            fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+                self.counter.set(self.counter.get() + 1);
+                SysRng.try_next_u64()
+            }
+
+            fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+                self.counter.set(self.counter.get() + 1);
+                SysRng.try_fill_bytes(dst)
+            }
+        }
+
+        let counter = Cell::new(0);
+        let reseeder = MockReseeder { counter: &counter };
+        let mut rng = ReseedingRng::<StdRng, _>::try_new(10, reseeder).unwrap();
+        assert_eq!(counter.get(), 1);
+
+        rng.fill_bytes(&mut [0u8; 10]);
+        assert_eq!(counter.get(), 1);
+        assert_eq!(rng.bytes_consumed, 10);
+        rng.fill_bytes(&mut [0u8; 1]);
+        assert_eq!(counter.get(), 2);
+        assert_eq!(rng.bytes_consumed, 1);
+        rng.fill_bytes(&mut [0u8; 9]);
+        assert_eq!(counter.get(), 2);
+        assert_eq!(rng.bytes_consumed, 10);
+        rng.fill_bytes(&mut [0u8; 1]);
+        assert_eq!(counter.get(), 3);
+        assert_eq!(rng.bytes_consumed, 1);
+        rng.fill_bytes(&mut [0u8; 25]);
+        assert_eq!(counter.get(), 5);
+        assert_eq!(rng.bytes_consumed, 6);
+
+        rng.next_u32();
+        assert_eq!(counter.get(), 5);
+        assert_eq!(rng.bytes_consumed, 10);
+        rng.next_u32();
+        assert_eq!(counter.get(), 6);
+        assert_eq!(rng.bytes_consumed, 4);
+        rng.next_u32();
+        assert_eq!(counter.get(), 6);
+        assert_eq!(rng.bytes_consumed, 8);
+        rng.next_u32(); // discarding 2 bytes
+        assert_eq!(counter.get(), 7);
+        assert_eq!(rng.bytes_consumed, 4);
+
+        rng.fill_bytes(&mut [0u8; 7]);
+        assert_eq!(counter.get(), 8);
+        assert_eq!(rng.bytes_consumed, 1);
+        rng.next_u64();
+        assert_eq!(counter.get(), 8);
+        assert_eq!(rng.bytes_consumed, 9);
+        rng.next_u64(); // discarding 1 byte
+        assert_eq!(counter.get(), 9);
+        assert_eq!(rng.bytes_consumed, 8);
+    }
+
     /// Tests in this module may occasionally fail.
     mod fallible {
         use super::*;
-        use rand::rngs::{StdRng, SysRng};
 
         const N: usize = 20 * 256;
 
