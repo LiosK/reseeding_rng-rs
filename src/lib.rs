@@ -35,6 +35,7 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
+use core::fmt;
 use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 
 /// A wrapper that periodically reseeds the underlying pseudorandom number generator.
@@ -49,7 +50,6 @@ use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 ///
 /// [`Generator`]: rand_core::block::Generator
 /// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
-#[derive(Debug)]
 pub struct ReseedingRng<R, Rsdr> {
     inner: R,
     reseeder: Rsdr,
@@ -162,6 +162,20 @@ where
             threshold: self.threshold,
             bytes_consumed: 0,
         }
+    }
+}
+
+impl<R, Rsdr> fmt::Debug for ReseedingRng<R, Rsdr>
+where
+    R: fmt::Debug,
+    Rsdr: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.debug_struct("ReseedingRng")
+            .field("inner", &self.inner)
+            .field("reseeder", &self.reseeder)
+            .field("threshold", &self.threshold)
+            .finish_non_exhaustive()
     }
 }
 
