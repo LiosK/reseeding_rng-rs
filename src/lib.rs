@@ -326,6 +326,12 @@ mod tests {
         assert_eq!(rng.bytes_consumed, 8);
     }
 
+    #[test]
+    #[should_panic]
+    fn panic_if_threshold_is_zero() {
+        let _ = ReseedingRng::<StdRng, _>::try_new(0, SysRng);
+    }
+
     /// Tests in this module may occasionally fail.
     mod fallible {
         use super::*;
