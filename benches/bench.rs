@@ -27,7 +27,7 @@ macro_rules! generate_benches {
         fn $bench_fill_bytes(b: &mut test::Bencher) {
             let mut rng = $rng();
             let mut buf = vec![0u8; 97 * 4];
-            b.iter(|| rng.fill_bytes(buf.as_mut()));
+            b.iter(|| rng.fill_bytes(test::black_box(buf.as_mut())));
         }
     };
 }
