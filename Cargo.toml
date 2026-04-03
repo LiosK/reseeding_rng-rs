@@ -8,6 +8,7 @@ rust-version = "1.85"
 description = "ReseedingRng that periodically reseeds the underlying PRNG"
 repository = "https://github.com/LiosK/reseeding_rng-rs"
 documentation = "https://docs.rs/reseeding_rng"
+exclude = ["/.github/"]
 
 [dependencies]
 rand_core = { version = "0.10", default-features = false }
