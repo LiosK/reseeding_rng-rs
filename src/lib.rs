@@ -1,24 +1,6 @@
 //! [`ReseedingRng`] that periodically reseeds the underlying pseudorandom number
 //! generator.
 //!
-//! This crate provides a simplified reimplementation of `ReseedingRng` for use with
-//! the random number generators from the `rand` crate v0.10, which no longer
-//! includes the `ReseedingRng` from v0.9 and earlier.
-//!
-//! Note that periodic reseeding is never strictly _necessary_.
-//! See [the `rand` v0.9 documentation] for further discussion.
-//!
-//! This crate is `no_std`-compatible.
-//!
-//! [the `rand` v0.9 documentation]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
-//!
-//! # Examples
-//!
-//! [`ReseedingRng`] is useful to replicate the reseeding behavior of [`ThreadRng`].
-//! As of `rand` v0.10.0, `ThreadRng` uses the same algorithm as [`StdRng`] and
-//! reseeds it via [`SysRng`] every 64KiB of output. You can emulate this behavior
-//! by configuring `ReseedingRng` as follows:
-//!
 //! ```rust
 //! use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
 //! use reseeding_rng::ReseedingRng;
@@ -28,9 +10,13 @@
 //! println!("{:?}", rng.random::<[char; 4]>());
 //! ```
 //!
-//! [`SysRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.SysRng.html
-//! [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
-//! [`ThreadRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.ThreadRng.html
+//! This crate provides a simplified reimplementation of `ReseedingRng` for use with
+//! the random number generators from the `rand` crate v0.10, which no longer
+//! includes [the `ReseedingRng` from v0.9] and earlier.
+//!
+//! This crate is `no_std`-compatible.
+//!
+//! [the `ReseedingRng` from v0.9]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
 
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -44,12 +30,29 @@ use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 /// been produced. If the periodic reseeding attempt fails, `ReseedingRng` silently skips it and
 /// retries after the next threshold is reached.
 ///
-/// Unlike [`rand` v0.9's equivalent](https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html),
-/// this variant is built on top of [`TryRng`] instead of the block [`Generator`], allowing a wider
-/// choice of underlying generators, including [`StdRng`].
+/// Unlike [`rand` v0.9's equivalent], this variant is built on top of [`TryRng`] instead of the
+/// block [`Generator`], allowing a wider choice of underlying generators, including [`StdRng`].
 ///
+/// # Examples
+///
+/// `ReseedingRng` is useful to replicate the reseeding behavior of [`ThreadRng`]. As of `rand`
+/// v0.10.0, `ThreadRng` uses the same algorithm as [`StdRng`] and reseeds it via [`SysRng`] every
+/// 64KiB of output. You can emulate this behavior by configuring `ReseedingRng` as follows:
+///
+/// ```rust
+/// use rand::{RngExt as _, rngs::StdRng, rngs::SysRng};
+/// use reseeding_rng::ReseedingRng;
+///
+/// let mut rng = ReseedingRng::<StdRng, _>::try_new(1024 * 64, SysRng)
+///     .expect("couldn't initialize ReseedingRng due to SysRng failure");
+/// println!("{:?}", rng.random::<[char; 4]>());
+/// ```
+///
+/// [`rand` v0.9's equivalent]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
 /// [`Generator`]: rand_core::block::Generator
 /// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
+/// [`SysRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.SysRng.html
+/// [`ThreadRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.ThreadRng.html
 pub struct ReseedingRng<R, Rsdr> {
     inner: R,
     reseeder: Rsdr,
