@@ -58,12 +58,12 @@ use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 /// ```rust
 /// use rand::{Rng as _, rngs::StdRng, rngs::SysRng};
 ///
-/// struct ForkSafeRng {
+/// struct ForkSafeReseedingRng {
 ///     inner: reseeding_rng::ReseedingRng<StdRng, SysRng>,
 ///     guard: forkguard::Guard,
 /// }
 ///
-/// impl ForkSafeRng {
+/// impl ForkSafeReseedingRng {
 ///     fn next_u32(&mut self) -> u32 {
 ///         if self.guard.detected_fork() {
 ///             // reseed ReseedingRng in child process

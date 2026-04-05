@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.10.4 - 2026-04-05
+
+- Documentation improvement.
+
 ## v0.10.3 - 2026-03-30
 
 - Hid `bytes_consumed` from the `Debug` output.
