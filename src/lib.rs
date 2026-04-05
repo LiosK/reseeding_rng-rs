@@ -48,11 +48,38 @@ use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 /// println!("{:?}", rng.random::<[char; 4]>());
 /// ```
 ///
+/// # Fork safety
+///
+/// The underlying generator is not automatically reseeded on process fork (contrast with
+/// `ReseedingRng` from `rand` v0.8 and earlier). Some applications need reseeding on fork to avoid
+/// the parent and child processes generating the same sequence of random numbers. The example
+/// below shows a wrapper that handles this using [the `forkguard` crate].
+///
+/// ```rust
+/// use rand::{Rng as _, rngs::StdRng, rngs::SysRng};
+///
+/// struct ForkSafeRng {
+///     inner: reseeding_rng::ReseedingRng<StdRng, SysRng>,
+///     guard: forkguard::Guard,
+/// }
+///
+/// impl ForkSafeRng {
+///     fn next_u32(&mut self) -> u32 {
+///         if self.guard.detected_fork() {
+///             // reseed ReseedingRng in child process
+///             let _ = self.inner.try_reseed();
+///         }
+///         self.inner.next_u32()
+///     }
+/// }
+/// ```
+///
 /// [`rand` v0.9's equivalent]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
 /// [`Generator`]: rand_core::block::Generator
 /// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
 /// [`SysRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.SysRng.html
 /// [`ThreadRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.ThreadRng.html
+/// [the `forkguard` crate]: https://crates.io/crates/forkguard
 pub struct ReseedingRng<R, Rsdr> {
     inner: R,
     reseeder: Rsdr,
