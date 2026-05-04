@@ -87,3 +87,47 @@ impl fmt::Debug for StdReseedingRng {
         f.debug_struct("StdReseedingRng").finish_non_exhaustive()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn debug_hides_inner_state() {
+        let s = format!("{:?}", StdReseedingRng::new());
+        assert_eq!(s, "StdReseedingRng { .. }");
+    }
+
+    /// Tests in this module may occasionally fail.
+    mod fallible {
+        use super::*;
+        use crate::tests::check_each_byte_for_randomness;
+        use rand_core::Rng as _;
+
+        const N: usize = 40 * 1024;
+
+        #[test]
+        fn generate_random_numbers() {
+            let mut rng = StdReseedingRng::new();
+
+            let arrays = (0..N)
+                .map(|_| rng.next_u32().to_le_bytes())
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+
+            let arrays = (0..N)
+                .map(|_| rng.next_u64().to_le_bytes())
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+
+            let mut buf = [0u8; 17];
+            let arrays = (0..N)
+                .map(|_| {
+                    rng.fill_bytes(buf.as_mut());
+                    buf
+                })
+                .collect::<Vec<_>>();
+            assert!(check_each_byte_for_randomness(&arrays));
+        }
+    }
+}

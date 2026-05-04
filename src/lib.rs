@@ -433,22 +433,22 @@ mod tests {
                 rng.fill_bytes(buf.as_mut());
             }
         }
+    }
 
-        fn check_each_byte_for_randomness<const N: usize>(arrays: &[[u8; N]]) -> bool {
-            (0..N).all(|i| {
-                let mut freq = [0usize; 256];
-                for array in arrays {
-                    freq[array[i] as usize] += 1; // by column
-                }
+    pub(crate) fn check_each_byte_for_randomness<const N: usize>(arrays: &[[u8; N]]) -> bool {
+        (0..N).all(|i| {
+            let mut freq = [0usize; 256];
+            for array in arrays {
+                freq[array[i] as usize] += 1; // by column
+            }
 
-                let expected = arrays.len() as f64 / 256.0;
-                let chi_squared = freq.iter().fold(0.0, |acc, &observed| {
-                    let dev = observed as f64 - expected;
-                    acc + dev * dev / expected
-                });
+            let expected = arrays.len() as f64 / 256.0;
+            let chi_squared = freq.iter().fold(0.0, |acc, &observed| {
+                let dev = observed as f64 - expected;
+                acc + dev * dev / expected
+            });
 
-                chi_squared < 330.52 // df = 255, p = 0.001
-            })
-        }
+            chi_squared < 330.52 // df = 255, p = 0.001
+        })
     }
 }
