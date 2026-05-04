@@ -10,8 +10,12 @@ repository = "https://github.com/LiosK/reseeding_rng-rs"
 documentation = "https://docs.rs/reseeding_rng"
 exclude = ["/.github/"]
 
+[features]
+std_rng = ["dep:rand"]
+
 [dependencies]
 rand_core = { version = "0.10", default-features = false }
+rand = { version = "0.10", default-features = false, features = ["std", "std_rng", "sys_rng"], optional = true }
 
 [dev-dependencies]
 forkguard = "0.1"

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.10.5 - unreleased
+
+- Added `std_rng` feature and `StdReseedingRng`.
+
 ## v0.10.4 - 2026-04-05
 
 - Documentation improvement.

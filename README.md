@@ -19,7 +19,12 @@ This crate provides a simplified reimplementation of `ReseedingRng` for use with
 the random number generators from the `rand` crate v0.10, which no longer
 includes [the `ReseedingRng` from v0.9] and earlier.
 
-This crate is `no_std`-compatible.
+This crate is `no_std`-compatible unless the `std_rng` feature is enabled.
+
+## Cargo features
+
+- `std_rng` (optional) enables `StdReseedingRng`, a newtype wrapping
+  `ReseedingRng<StdRng, SysRng>` with a default reseeding threshold of 64KiB.
 
 [the `ReseedingRng` from v0.9]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
 

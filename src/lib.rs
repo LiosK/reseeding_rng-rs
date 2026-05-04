@@ -14,7 +14,12 @@
 //! the random number generators from the `rand` crate v0.10, which no longer
 //! includes [the `ReseedingRng` from v0.9] and earlier.
 //!
-//! This crate is `no_std`-compatible.
+//! This crate is `no_std`-compatible unless the `std_rng` feature is enabled.
+//!
+//! # Cargo features
+//!
+//! - `std_rng` (optional) enables [`StdReseedingRng`], a newtype wrapping
+//!   `ReseedingRng<StdRng, SysRng>` with a default reseeding threshold of 64KiB.
 //!
 //! [the `ReseedingRng` from v0.9]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
 
@@ -36,7 +41,7 @@ use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 /// # Examples
 ///
 /// `ReseedingRng` is useful to replicate the reseeding behavior of [`ThreadRng`]. As of `rand`
-/// v0.10.0, `ThreadRng` uses the same algorithm as [`StdRng`] and reseeds it via [`SysRng`] every
+/// v0.10.1, `ThreadRng` uses the same algorithm as [`StdRng`] and reseeds it via [`SysRng`] every
 /// 64KiB of output. You can emulate this behavior by configuring `ReseedingRng` as follows:
 ///
 /// ```rust
@@ -47,6 +52,8 @@ use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 ///     .expect("couldn't initialize ReseedingRng due to SysRng failure");
 /// println!("{:?}", rng.random::<[char; 4]>());
 /// ```
+///
+/// See also [`StdReseedingRng`] for a convenient newtype with this configuration.
 ///
 /// # Fork safety
 ///
@@ -208,6 +215,12 @@ where
             .finish_non_exhaustive()
     }
 }
+
+#[cfg(feature = "std_rng")]
+mod std_rng;
+
+#[cfg(feature = "std_rng")]
+pub use std_rng::StdReseedingRng;
 
 #[cfg(test)]
 mod mock;
