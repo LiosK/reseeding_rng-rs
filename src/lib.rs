@@ -222,6 +222,9 @@ mod std_rng;
 #[cfg(feature = "std_rng")]
 pub use std_rng::StdReseedingRng;
 
+#[cfg(feature = "std_rng")]
+pub use rand::RngExt;
+
 #[cfg(test)]
 mod mock;
 

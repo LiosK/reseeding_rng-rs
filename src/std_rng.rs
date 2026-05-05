@@ -1,9 +1,8 @@
 use core::{convert, fmt};
 
 use rand::rngs::{StdRng, SysError, SysRng};
-use rand::{TryCryptoRng, TryRng};
 
-use crate::ReseedingRng;
+use super::{ReseedingRng, TryCryptoRng, TryRng};
 
 /// A newtype wrapping `ReseedingRng<StdRng, SysRng>` with a default reseeding threshold of 64KiB.
 ///
@@ -13,6 +12,15 @@ use crate::ReseedingRng;
 ///
 /// Note that the inner generators and the reseeding threshold may change in the future and such a
 /// change may not be considered a breaking change.
+///
+/// # Examples
+///
+/// ```rust
+/// use reseeding_rng::{RngExt as _, StdReseedingRng};
+///
+/// let mut rng = StdReseedingRng::new();
+/// println!("{:?}", rng.random::<[char; 4]>());
+/// ```
 pub struct StdReseedingRng {
     inner: ReseedingRng<StdRng, SysRng>,
 }
