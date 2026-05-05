@@ -21,4 +21,4 @@ jobs:
       - run: cargo build --verbose --all-features
       - run: cargo test --verbose -- --skip fallible
       - run: cargo test --verbose --all-features -- --skip fallible
-      - run: cargo +nightly bench --verbose
+      - run: cargo +nightly bench --verbose --all-features

@@ -6,6 +6,9 @@ use rand_core::{Rng as _, SeedableRng as _};
 
 use reseeding_rng::ReseedingRng;
 
+#[cfg(feature = "std_rng")]
+use reseeding_rng::StdReseedingRng;
+
 #[path = "../src/mock.rs"]
 mod mock;
 
@@ -45,6 +48,11 @@ mod overhead {
         StdRng::try_from_rng(&mut SysRng).unwrap()
     }
 
+    #[cfg(feature = "std_rng")]
+    fn std_reseeding() -> StdReseedingRng {
+        StdReseedingRng::new()
+    }
+
     generate_benches!(
         reseeding,
         bench_next_u32_reseeding,
@@ -57,6 +65,14 @@ mod overhead {
         bench_next_u32_bare_rng,
         bench_next_u64_bare_rng,
         bench_fill_bytes_bare_rng
+    );
+
+    #[cfg(feature = "std_rng")]
+    generate_benches!(
+        std_reseeding,
+        bench_next_u32_std_reseeding,
+        bench_next_u64_std_reseeding,
+        bench_fill_bytes_std_reseeding
     );
 }
 
