@@ -223,6 +223,7 @@ mod std_rng;
 pub use std_rng::StdReseedingRng;
 
 #[cfg(feature = "std_rng")]
+#[doc(no_inline)]
 pub use rand::RngExt;
 
 #[cfg(test)]
