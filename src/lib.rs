@@ -133,6 +133,9 @@ where
 
     #[cold]
     fn reset_after_reseed_attempt_at(&mut self, pos: usize) {
+        // Unlike `ThreadRng` as of `rand` v0.10.1, this implementation does not panic if reseeding
+        // fails. Instead, it silently skips it and retries once the next threshold is reached. The
+        // reasoning is that users can easily get the panicking behavior by using `UnwrapErr`.
         let _ = self.try_reseed();
         self.bytes_consumed = pos;
     }
@@ -224,7 +227,7 @@ pub use std_rng::StdReseedingRng;
 
 #[cfg(feature = "std_rng")]
 #[doc(no_inline)]
-pub use rand::RngExt;
+pub use rand::RngExt; // re-exported for convenience
 
 #[cfg(test)]
 mod mock;
