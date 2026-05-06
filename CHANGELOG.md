@@ -1,8 +1,11 @@
 # Changelog
 
-## v0.10.5 - unreleased
+## v0.10.5 - 2026-05-05
 
-- Added `std_rng` feature and `StdReseedingRng`.
+- Added `std_rng` cargo feature that enables:
+  - `StdReseedingRng`, a newtype with sensible defaults for general use.
+  - Re-export of `rand::RngExt` trait for use with `StdReseedingRng`.
+- Updated dependencies.
 
 ## v0.10.4 - 2026-04-05
 

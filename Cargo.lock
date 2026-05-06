@@ -250,7 +250,7 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reseeding_rng"
-version = "0.10.4"
+version = "0.10.5"
 dependencies = [
  "forkguard",
  "rand 0.10.1",
