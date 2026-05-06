@@ -31,6 +31,7 @@ impl StdReseedingRng {
     /// # Panics
     ///
     /// Panics if [`SysRng`] fails to seed the underlying generator.
+    #[track_caller]
     pub fn new() -> Self {
         Self::try_new().expect("couldn't initialize StdReseedingRng due to SysRng failure")
     }
@@ -78,6 +79,7 @@ impl TryCryptoRng for StdReseedingRng {}
 /// This implementation reseeds the underlying generator upon `clone()` and panics if [`SysRng`]
 /// fails to do so.
 impl Clone for StdReseedingRng {
+    #[track_caller]
     fn clone(&self) -> Self {
         Self::new()
     }
@@ -85,6 +87,7 @@ impl Clone for StdReseedingRng {
 
 /// This implementation panics if [`SysRng`] fails to seed the underlying generator.
 impl Default for StdReseedingRng {
+    #[track_caller]
     fn default() -> Self {
         Self::new()
     }

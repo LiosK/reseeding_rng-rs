@@ -109,6 +109,7 @@ where
     /// # Errors
     ///
     /// Returns `Err` if `reseeder` fails to seed the underlying generator.
+    #[track_caller]
     pub fn try_new(threshold: usize, mut reseeder: Rsdr) -> Result<Self, Rsdr::Error> {
         assert!(threshold > 0, "`threshold` must be greater than zero");
         R::try_from_rng(&mut reseeder).map(|inner| Self {

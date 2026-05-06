@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added `#[track_caller]` where useful.
+
 ## v0.10.5 - 2026-05-05
 
 - Added `std_rng` cargo feature that enables:
