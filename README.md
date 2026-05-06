@@ -26,7 +26,7 @@ This crate is `no_std`-compatible unless the `std_rng` feature is enabled.
 - `std_rng` (optional) enables `StdReseedingRng`, a newtype wrapping
   `ReseedingRng<StdRng, SysRng>` with a default reseeding threshold of 64KiB.
 
-[the `ReseedingRng` from v0.9]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
+[the `ReseedingRng` from v0.9]: https://docs.rs/rand/0.9.4/rand/rngs/struct.ReseedingRng.html
 
 ## License
 

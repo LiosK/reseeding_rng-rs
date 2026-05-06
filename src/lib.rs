@@ -21,7 +21,7 @@
 //! - `std_rng` (optional) enables [`StdReseedingRng`], a newtype wrapping
 //!   `ReseedingRng<StdRng, SysRng>` with a default reseeding threshold of 64KiB.
 //!
-//! [the `ReseedingRng` from v0.9]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
+//! [the `ReseedingRng` from v0.9]: https://docs.rs/rand/0.9.4/rand/rngs/struct.ReseedingRng.html
 
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -81,7 +81,7 @@ use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 /// }
 /// ```
 ///
-/// [`rand` v0.9's equivalent]: https://docs.rs/rand/0.9.2/rand/rngs/struct.ReseedingRng.html
+/// [`rand` v0.9's equivalent]: https://docs.rs/rand/0.9.4/rand/rngs/struct.ReseedingRng.html
 /// [`Generator`]: rand_core::block::Generator
 /// [`StdRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.StdRng.html
 /// [`SysRng`]: https://docs.rs/rand/0.10/rand/rngs/struct.SysRng.html
