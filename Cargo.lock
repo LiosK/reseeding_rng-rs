@@ -54,9 +54,9 @@ checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
 
 [[package]]
 name = "forkguard"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61bab9e346d9936120193360409a5ef77c7fb32ad20322aae22ce7994678713c"
+checksum = "1d9569776e00e305c071b0783305a86dc7a2533a8b9fccb15569d6e5488b8581"
 
 [[package]]
 name = "getrandom"
@@ -250,7 +250,7 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reseeding_rng"
-version = "0.10.5"
+version = "0.10.6"
 dependencies = [
  "forkguard",
  "rand 0.10.1",

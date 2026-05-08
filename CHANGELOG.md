@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## v0.10.6 - 2026-05-07
 
-- Added `#[track_caller]` where useful.
+- Added `#[track_caller]` to improve panic diagnosis.
 
 ## v0.10.5 - 2026-05-05
 
