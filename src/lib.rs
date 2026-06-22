@@ -196,13 +196,7 @@ where
     Rsdr: Clone + Rng,
 {
     fn clone(&self) -> Self {
-        let mut reseeder = self.reseeder.clone();
-        Self {
-            inner: R::from_rng(&mut reseeder),
-            reseeder,
-            threshold: self.threshold,
-            bytes_consumed: 0,
-        }
+        Self::try_new(self.threshold, self.reseeder.clone()).unwrap()
     }
 }
 
@@ -303,6 +297,24 @@ mod tests {
 
         assert_ne!(g1.next_u32(), g2.next_u32());
         assert_ne!(g1.next_u64(), g2.next_u64());
+    }
+
+    #[test]
+    fn reseed_after_clone() {
+        let mut g1 = ReseedingRng::<StdRng, _>::try_new(365, rand::rng()).unwrap();
+        assert_eq!(g1.threshold, 365);
+        assert_eq!(g1.bytes_consumed, 0);
+        g1.next_u32();
+        g1.next_u64();
+        assert_eq!(g1.bytes_consumed, 32 / 8 + 64 / 8);
+
+        let mut g2 = g1.clone();
+        assert_eq!(g2.threshold, 365);
+        assert_eq!(g2.bytes_consumed, 0);
+        assert_ne!(g1.next_u32(), g2.next_u32());
+        assert_ne!(g1.next_u64(), g2.next_u64());
+        assert_eq!(g1.bytes_consumed, (32 / 8 + 64 / 8) * 2);
+        assert_eq!(g2.bytes_consumed, 32 / 8 + 64 / 8);
     }
 
     #[test]
