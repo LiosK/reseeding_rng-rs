@@ -26,7 +26,7 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-use core::fmt;
+use core::{convert, fmt};
 use rand_core::{Rng, SeedableRng, TryCryptoRng, TryRng};
 
 /// A wrapper that periodically reseeds the underlying pseudorandom number generator.
@@ -196,7 +196,9 @@ where
     Rsdr: Clone + Rng,
 {
     fn clone(&self) -> Self {
-        Self::try_new(self.threshold, self.reseeder.clone()).unwrap()
+        let result: Result<_, convert::Infallible> =
+            Self::try_new(self.threshold, self.reseeder.clone());
+        result.unwrap()
     }
 }
 
