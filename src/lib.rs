@@ -106,12 +106,20 @@ where
     ///
     /// Panics if `threshold` is zero.
     ///
+    /// Currently, any `threshold` greater than zero is accepted, though a future version will panic
+    /// if `threshold` exceeds `isize::MAX` to guard against overflow in extreme cases.
+    ///
     /// # Errors
     ///
     /// Returns `Err` if `reseeder` fails to seed the underlying generator.
     #[track_caller]
     pub fn try_new(threshold: usize, mut reseeder: Rsdr) -> Result<Self, Rsdr::Error> {
         assert!(threshold > 0, "`threshold` must be greater than zero");
+        // TODO: enable this check in the next major release
+        // assert!(
+        //     threshold <= isize::MAX.try_into().unwrap(),
+        //     "`threshold` must not exceed `isize::MAX`"
+        // );
         R::try_from_rng(&mut reseeder).map(|inner| Self {
             inner,
             reseeder,
