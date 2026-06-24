@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Minor refactoring.
+- Minor refactoring and performance improvement.
 
 ## v0.10.6 - 2026-05-07
 
