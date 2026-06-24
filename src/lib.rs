@@ -158,8 +158,9 @@ where
     type Error = R::Error;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
-        if self.bytes_consumed + 32 / 8 <= self.threshold {
-            self.bytes_consumed += 32 / 8;
+        let new_bytes_consumed = self.bytes_consumed + 32 / 8;
+        if new_bytes_consumed <= self.threshold {
+            self.bytes_consumed = new_bytes_consumed;
         } else {
             self.reset_after_reseed_attempt_at(32 / 8);
         }
@@ -167,8 +168,9 @@ where
     }
 
     fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
-        if self.bytes_consumed + 64 / 8 <= self.threshold {
-            self.bytes_consumed += 64 / 8;
+        let new_bytes_consumed = self.bytes_consumed + 64 / 8;
+        if new_bytes_consumed <= self.threshold {
+            self.bytes_consumed = new_bytes_consumed;
         } else {
             self.reset_after_reseed_attempt_at(64 / 8);
         }
@@ -177,8 +179,9 @@ where
 
     fn try_fill_bytes(&mut self, mut dst: &mut [u8]) -> Result<(), Self::Error> {
         loop {
-            if self.bytes_consumed + dst.len() <= self.threshold {
-                self.bytes_consumed += dst.len();
+            let new_bytes_consumed = self.bytes_consumed + dst.len();
+            if new_bytes_consumed <= self.threshold {
+                self.bytes_consumed = new_bytes_consumed;
                 break self.inner.try_fill_bytes(dst);
             }
             if self.bytes_consumed < self.threshold {
