@@ -150,6 +150,28 @@ where
     }
 }
 
+impl<R, Rsdr> ReseedingRng<R, Rsdr>
+where
+    R: TryRng + SeedableRng,
+    Rsdr: TryRng,
+{
+    #[cold]
+    fn try_fill_bytes_slow(&mut self, mut dst: &mut [u8]) -> Result<(), R::Error> {
+        while !dst.is_empty() {
+            if self.bytes_consumed >= self.threshold {
+                let _ = self.try_reseed();
+                self.bytes_consumed = 0;
+            } else {
+                let len = dst.len().min(self.threshold - self.bytes_consumed);
+                self.bytes_consumed += len;
+                self.inner.try_fill_bytes(&mut dst[..len])?;
+                dst = &mut dst[len..];
+            }
+        }
+        Ok(())
+    }
+}
+
 impl<R, Rsdr> TryRng for ReseedingRng<R, Rsdr>
 where
     R: TryRng + SeedableRng,
@@ -177,19 +199,13 @@ where
         self.inner.try_next_u64()
     }
 
-    fn try_fill_bytes(&mut self, mut dst: &mut [u8]) -> Result<(), Self::Error> {
-        loop {
-            let new_bytes_consumed = self.bytes_consumed + dst.len();
-            if new_bytes_consumed <= self.threshold {
-                self.bytes_consumed = new_bytes_consumed;
-                break self.inner.try_fill_bytes(dst);
-            }
-            if self.bytes_consumed < self.threshold {
-                let mid = self.threshold - self.bytes_consumed;
-                self.inner.try_fill_bytes(&mut dst[..mid])?;
-                dst = &mut dst[mid..];
-            }
-            self.reset_after_reseed_attempt_at(0);
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+        let new_bytes_consumed = self.bytes_consumed + dst.len();
+        if new_bytes_consumed <= self.threshold {
+            self.bytes_consumed = new_bytes_consumed;
+            self.inner.try_fill_bytes(dst)
+        } else {
+            self.try_fill_bytes_slow(dst)
         }
     }
 }
