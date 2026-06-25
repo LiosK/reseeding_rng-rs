@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.10.7 - 2026-06-24
 
 - Minor refactoring and performance improvement.
 
