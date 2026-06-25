@@ -157,18 +157,20 @@ where
 {
     #[cold]
     fn try_fill_bytes_slow(&mut self, mut dst: &mut [u8]) -> Result<(), R::Error> {
-        while !dst.is_empty() {
-            if self.bytes_consumed >= self.threshold {
-                let _ = self.try_reseed();
-                self.bytes_consumed = 0;
-            } else {
+        loop {
+            if self.bytes_consumed < self.threshold {
                 let len = dst.len().min(self.threshold - self.bytes_consumed);
                 self.bytes_consumed += len;
                 self.inner.try_fill_bytes(&mut dst[..len])?;
                 dst = &mut dst[len..];
             }
+            if dst.is_empty() {
+                break Ok(());
+            } else {
+                let _ = self.try_reseed();
+                self.bytes_consumed = 0;
+            }
         }
-        Ok(())
     }
 }
 
